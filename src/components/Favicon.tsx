@@ -1,5 +1,6 @@
 import BareClient from "@tomphttp/bare-client";
-import { JSX, onCleanup, createSignal, Accessor, createEffect } from "solid-js";
+import { createEffect, createSignal, onCleanup } from "solid-js";
+import type { Accessor, JSX } from "solid-js";
 import { bareClient, setBareClient } from "~/data/appState";
 
 interface FaviconProps {
@@ -25,10 +26,15 @@ export default function Favicon(props: FaviconProps): JSX.Element {
     if (new URL(props.src()).origin === location.origin)
       return setIcon(props.src());
 
-    if (!bareClient())
-      setBareClient(
-        new BareClient(new URL(window.__uv$config.bare, location.toString()))
-      );
+    if (!bareClient()) {
+      const server =
+        typeof window.__uv$config.bare === "string"
+          ? window.__uv$config.bare
+          : window.__uv$config.bare[
+              Math.floor(Math.random() * window.__uv$config.bare.length)
+            ];
+      setBareClient(new BareClient(new URL(server, location.toString())));
+    }
 
     const promise = (async () => {
       const outgoing = await (bareClient() as BareClient).fetch(props.src(), {

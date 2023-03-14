@@ -1,4 +1,4 @@
-import Preferences from "~/types/Preferences";
+import type Preferences from "~/types/Preferences";
 
 export default function preferences(): Preferences {
   return localStorage.getItem("preferences")
@@ -8,6 +8,7 @@ export default function preferences(): Preferences {
         "general.tabs.openWindowLinksInTab": true,
         "general.tabs.switchToMedia": false,
         "general.tabs.confirmBeforeClosing": true,
+        "search.defaults.useHttps": false,
         "search.defaults.searchEngine": "google",
         "search.defaults.proxy": "ultraviolet",
         "bookmarks.shown": true

@@ -101,7 +101,7 @@ element.addEventListener("contextmenu", (event) => {
   event.data = event.data ?? [];
 
   event.data.push(
-    new Velocity.ContextItem({
+    new ContextItem({
       text: "Click me!",
       onClick: () => {
         alert("You clicked me!");
@@ -109,4 +109,57 @@ element.addEventListener("contextmenu", (event) => {
     })
   );
 });
+```
+
+## `Keybind` - Create new keybinds
+
+### Paramaters
+
+- _`options`_
+  - _`name` - Name of keybind_
+  - _`description` - Description of keybind_
+  - _`key` - Non case sensitive key_
+  - _`ctrl?` - Boolean to require ctrl_
+  - _`shift?` - Boolean to require shift_
+  - _`alt?` - Boolean to require alt_
+  - _`meta?` - Boolean to require meta_
+  - _`callback` - Callback when keybind is run_
+    - _`event` - Keyboard event_
+
+### Methods
+
+- _`toString` - Return the keybind as a readable string_
+
+### Example
+
+```js
+new Keybind({
+  name: "Find",
+  description: "Find text in page",
+  key: "f",
+  ctrl: true,
+  callback(event) {
+    // do something
+    alert("You ran the keybind!");
+  }
+});
+```
+
+# Objects
+
+## `history` - Modify history entries
+
+### Methods
+
+- _`add` - Async function to add or modify history entries_
+- _`get` - Async function to get all entries_
+  - _`tab?` - the `Tab` object to add or modify in history_
+- _`delete` - Async function to delete an entry_
+  - _`id` - the history object id `<Tab>.historyId`_
+- _`clear` - Async function clear all entries_
+
+### Example
+
+```js
+await history.clear();
 ```

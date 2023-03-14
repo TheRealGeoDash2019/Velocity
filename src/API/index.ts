@@ -1,9 +1,11 @@
-import Tab from "./Tab";
-import Protocol from "./Protocol";
-import ContextItem from "./ContextItem";
 import Bookmark from "./Bookmark";
+import ContextItem from "./ContextItem";
+import History from "./History";
+import Keybind from "./Keybind";
+import Protocol from "./Protocol";
+import Tab from "./Tab";
 import { bindIFrameMousemove } from "~/components/ContextMenu";
-import { tabs, protocols, bookmarks } from "~/data/appState";
+import { bookmarks, protocols, tabs, keybinds } from "~/data/appState";
 
 const Velocity = {
   Tab,
@@ -13,7 +15,11 @@ const Velocity = {
   Bookmark,
   getBookmarks: bookmarks,
   ContextItem,
-  bindIFrameMousemove
+  Keybind,
+  getKeybinds: keybinds,
+  bindIFrameMousemove,
+  history: new History(),
+  postManifest: false
 };
 
 declare global {

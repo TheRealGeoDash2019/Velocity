@@ -1,6 +1,6 @@
-import { JSX, createSignal, onMount, createEffect } from "solid-js";
-import preferences from "~/util/preferences";
+import { JSX, createEffect, createSignal, onMount } from "solid-js";
 import Preferences from "~/types/Preferences";
+import preferences from "~/util/preferences";
 
 interface ToggleProps {
   id: keyof Preferences;
@@ -50,7 +50,7 @@ export default function Toggle(props: ToggleProps): JSX.Element {
           )
         )}
       </select>
-      <label>{props.label}</label>
+      <label class="font-light">{props.label}</label>
     </div>
   );
 }

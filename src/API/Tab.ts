@@ -1,19 +1,14 @@
-import { Setter, Accessor, createSignal } from "solid-js";
-import {
-  tabs,
-  setTabs,
-  tabStack,
-  setTabStack,
-  bookmarks,
-  setBookmarks
-} from "~/data/appState";
-import keybinds from "~/util/keybinds";
-import * as urlUtil from "~/util/url";
-import handleClick from "~/util/clickHandler";
 import Bookmark from "./Bookmark";
+import type ContextItem from "./ContextItem";
+import { createSignal } from "solid-js";
+import type { Accessor, Setter } from "solid-js";
 import { bindIFrameMousemove } from "~/components/ContextMenu";
-import ContextItem from "./ContextItem";
+import { setTabStack, setTabs, tabStack, tabs } from "~/data/appState";
+import handleClick from "~/util/clickHandler";
 import generateContextButtons from "~/util/generateContextButtons";
+import getManifest from "~/util/getManifest";
+import keybinds from "~/util/keybindManager";
+import * as urlUtil from "~/util/url";
 
 interface ProxyWindow extends Window {
   __uv$location: Location;
@@ -21,7 +16,8 @@ interface ProxyWindow extends Window {
 
 export default class Tab {
   iframe: HTMLIFrameElement = document.createElement("iframe");
-  id: number = Math.floor(Math.random() * 1000000000000000);
+  id: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+  historyId: number = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
   #pinned: [Accessor<boolean>, Setter<boolean>] = createSignal<boolean>(false);
   #small: [Accessor<boolean>, Setter<boolean>] = createSignal<boolean>(false);
   #title: [Accessor<string>, Setter<string>] = createSignal<string>("");
@@ -191,10 +187,59 @@ export default class Tab {
           event.data = generateContextButtons(event.target as HTMLElement);
       }
     );
-    this.iframe.contentWindow?.addEventListener("load", () => {
+    this.iframe.contentWindow?.addEventListener("load", async () => {
       this.setDevTools(false);
+      const history = await window.Velocity.history.get();
+      if (
+        !history.find((x) => {
+          const id = x.id === this.historyId;
+          const url = urlUtil.areEqual(x.url, this.url());
+          return id && url;
+        })
+      )
+        this.historyId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+      window.Velocity.history.add(this);
+      if (window.Velocity && window.Velocity.postManifest) {
+        const manifest =
+          this.iframe.contentDocument?.querySelector<HTMLLinkElement>(
+            "link[rel='manifest']"
+          )?.href;
+        if (manifest) {
+          getManifest(manifest, this.url());
+        }
+      }
     });
     bindIFrameMousemove(this.iframe);
+
+    if (this.iframe.contentWindow) {
+      const tab = this;
+      this.iframe.contentWindow.history.pushState = new Proxy(
+        this.iframe.contentWindow.history.pushState,
+        {
+          apply(target, thisArg, argArray) {
+            setTimeout(() => {
+              tab.historyId = Math.floor(
+                Math.random() * Number.MAX_SAFE_INTEGER
+              );
+              window.Velocity.history.add(tab);
+            });
+            return Reflect.apply(target, thisArg, argArray);
+          }
+        }
+      );
+
+      this.iframe.contentWindow.history.replaceState = new Proxy(
+        this.iframe.contentWindow.history.replaceState,
+        {
+          apply(target, thisArg, argArray) {
+            setTimeout(() => {
+              window.Velocity.history.add(tab);
+            });
+            return Reflect.apply(target, thisArg, argArray);
+          }
+        }
+      );
+    }
   }
 
   #updateDetails(): void {
